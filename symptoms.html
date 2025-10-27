@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SymptTrack — Symptoms</title>
+  <style>
+    :root {
+      --accent: #2b7cff;
+      --bg-gradient: linear-gradient(120deg,#f7fbff,#f7fff2);
+    }
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      margin: 0;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: #123;
+    }
+    header {
+      background: var(--accent);
+      padding: 14px 22px;
+      border-radius: 14px;
+      margin: 18px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin-right: 18px;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    header a:hover {
+      color: #dfefff;
+      text-decoration: underline;
+    }
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      animation: fadeIn 0.6s ease;
+    }
+    .controls {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    select, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d8e2ef;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 6px 14px rgba(43,124,255,0.18);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(43,124,255,0.25);
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+    @media (max-width:1100px) { .calendar{grid-template-columns:repeat(4,1fr);} }
+    @media (max-width:700px) { .calendar{grid-template-columns:repeat(2,1fr);} }
+    .daybox {
+      background: #fff;
+      padding: 14px;
+      border-radius: 14px;
+      box-shadow: 0 6px 16px rgba(20,40,60,0.08);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease;
+    }
+    .daybox:hover {
+      transform: translateY(-3px);
+    }
+    .daynum {
+      font-weight: 800;
+      color: #102a43;
+      margin-bottom: 8px;
+    }
+    textarea {
+      flex: 1;
+      border: 1px solid #e6edf7;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px 0;
+      resize: none;
+      font-size: 14px;
+      transition: border 0.2s ease;
+    }
+    textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    .btnrow {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .submit {
+      background: linear-gradient(180deg, #2b7cff, #146be6);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(43,124,255,0.2);
+      border: none;
+    }
+    .submit:hover {
+      box-shadow: 0 8px 20px rgba(43,124,255,0.3);
+    }
+    .save {
+      background: #fff;
+      border: 1px solid #e6eef8;
+      color: #102a43;
+    }
+    .save:hover {
+      background: #f8fbff;
+    }
+    .diag {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f7fbff;
+      color: #123;
+      font-size: 14px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/home">Home</a>
+    <a href="/symptoms">Symptoms</a>
+    <a href="/records">Records</a>
+    <a href="/about">About</a>
+  </header>
+
+  <main>
+    <h1>Symptom Journal — Calendar View</h1>
+    <div class="controls">
+      <label>Month:
+        <select id="month"></select>
+      </label>
+      <label>Year:
+        <select id="year"></select>
+      </label>
+      <button id="refresh">Refresh</button>
+    </div>
+
+    <div class="calendar" id="calendar"></div>
+  </main>
+
+  <script>
+    const monthSelect = document.getElementById('month');
+    const yearSelect = document.getElementById('year');
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    months.forEach((m,i)=> {
+      const o = document.createElement('option'); o.value = i; o.textContent = m; monthSelect.appendChild(o);
+    });
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    for(let y=currentYear-2;y<=currentYear+2;y++){
+      const o = document.createElement('option'); o.value = y; o.textContent = y; yearSelect.appendChild(o);
+    }
+    monthSelect.value = currentMonth; yearSelect.value = currentYear;
+
+    document.getElementById('refresh').addEventListener('click', renderCalendar);
+
+    function daysInMonth(m,y){ return new Date(y,m+1,0).getDate(); }
+
+    async function renderCalendar(){
+      const month = parseInt(monthSelect.value,10);
+      const year = parseInt(yearSelect.value,10);
+      const total = daysInMonth(month, year);
+      const calendarEl = document.getElementById('calendar');
+      calendarEl.innerHTML = '';
+      const key = `sympt_${year}-${String(month+1).padStart(2,'0')}`;
+      let monthData = {};
+      try { monthData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e){ monthData = {}; }
+
+      for(let d=1; d<=total; d++){
+        const dayBox = document.createElement('div'); dayBox.className = 'daybox';
+        const daynum = document.createElement('div'); daynum.className='daynum'; daynum.textContent = d;
+        dayBox.appendChild(daynum);
+
+        const ta = document.createElement('textarea'); ta.placeholder = "Enter today's symptoms..."; ta.rows=6;
+        if(monthData[d]) ta.value = monthData[d].symptoms || '';
+        dayBox.appendChild(ta);
+
+        const row = document.createElement('div'); row.className='btnrow';
+        const submitBtn = document.createElement('button'); submitBtn.className='btn submit'; submitBtn.textContent='Submit';
+        const saveBtn = document.createElement('button'); saveBtn.className='btn save'; saveBtn.textContent='Save (local)';
+        row.appendChild(submitBtn); row.appendChild(saveBtn);
+        dayBox.appendChild(row);
+
+        const diagDiv = document.createElement('div'); diagDiv.className='diag';
+        diagDiv.textContent = (monthData[d] && monthData[d].diagnosisSummary) ? monthData[d].diagnosisSummary : 'Diagnosis will appear here after Submit';
+        dayBox.appendChild(diagDiv);
+
+        // Save only (local)
+        saveBtn.addEventListener('click', ()=>{
+          monthData[d] = monthData[d] || {};
+          monthData[d].symptoms = ta.value;
+          localStorage.setItem(key, JSON.stringify(monthData));
+          alert('Saved locally');
+        });
+
+        // Submit: send to backend, store diagnosis
+        submitBtn.addEventListener('click', async ()=>{
+          const txt = ta.value.trim();
+          if(!txt){ alert('Please enter symptoms before submitting'); return; }
+          submitBtn.disabled = true; submitBtn.textContent='Submitting...';
+          try{
+            const dateIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const resp = await fetch('/diagnosis', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ text: txt, date: dateIso })
+            });
+
+            if(!resp.ok){
+              let txtErr = await resp.text();
+              throw new Error('Server returned status '+resp.status+': '+txtErr);
+            }
+
+            const j = await resp.json();
+
+            let diagSummary = 'No predictions';
+            if(Array.isArray(j.diagnoses) && j.diagnoses.length){
+              diagSummary = j.diagnoses.slice(0,6).map(x => `${x.label} (${Math.round(x.prob*100)}%)`).join(', ');
+            }
+
+            monthData[d] = monthData[d] || {};
+            monthData[d].symptoms = txt;
+            monthData[d].diagnosisSummary = diagSummary;
+            localStorage.setItem(key, JSON.stringify(monthData));
+
+            diagDiv.textContent = diagSummary;
+            alert('Submitted & saved');
+          }catch(err){
+            alert('Submission failed: ' + (err.message || err));
+          }finally{
+            submitBtn.disabled = false; submitBtn.textContent='Submit';
+          }
+        });
+
+        calendarEl.appendChild(dayBox);
+      }
+    }
+
+    renderCalendar();
+  </script>
+</body>
+</html>

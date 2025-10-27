@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SymptTrack — Records</title>
+  <style>
+    :root {
+      --accent: #2b7cff;
+      --bg-gradient: linear-gradient(120deg,#6a11cb,#2575fc);
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: #333;
+    }
+    header {
+      background: var(--accent);
+      padding: 14px 22px;
+      border-radius: 14px;
+      margin: 18px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin-right: 18px;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    header a:hover {
+      color: #dfefff;
+      text-decoration: underline;
+    }
+    main {
+      max-width: 1100px;
+      margin: 18px auto;
+      padding: 24px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 18px;
+      color: var(--accent);
+    }
+    .controls {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    label {
+      font-weight: 600;
+      color: #444;
+    }
+    select {
+      margin-left: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccd7e6;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    select:hover, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 5px rgba(43,124,255,0.4);
+    }
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(43,124,255,0.3);
+    }
+    button:hover {
+      background: #1f64d6;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(43,124,255,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(43,124,255,0.25);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    th {
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      text-align: left;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eef4fb;
+    }
+    tr:hover td {
+      background: #f4f9ff;
+    }
+    #list p {
+      padding: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      border-radius: 8px;
+      color: #856404;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/home">Home</a>
+    <a href="/symptoms">Symptoms</a>
+    <a href="/records">Records</a>
+    <a href="/about">About</a>
+  </header>
+
+  <main>
+    <h1>Records</h1>
+    <div class="controls">
+      <label>Month:
+        <select id="month"></select>
+      </label>
+      <label>Year:
+        <select id="year"></select>
+      </label>
+      <button id="load">Load</button>
+      <button id="download">Download PDF</button>
+    </div>
+
+    <div id="list"></div>
+  </main>
+
+  <script>
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const monthSelect = document.getElementById('month'), yearSelect=document.getElementById('year');
+
+    months.forEach((m,i)=> monthSelect.appendChild(Object.assign(document.createElement('option'),{value:i,textContent:m})));
+    const now = new Date(), currentMonth = now.getMonth(), currentYear = now.getFullYear();
+    for(let y=currentYear-2;y<=currentYear+2;y++) yearSelect.appendChild(Object.assign(document.createElement('option'),{value:y,textContent:y}));
+    monthSelect.value = currentMonth; yearSelect.value = currentYear;
+
+    document.getElementById('load').addEventListener('click', loadRecords);
+    document.getElementById('download').addEventListener('click', downloadPDF);
+
+    function loadRecords(){
+      const m = parseInt(monthSelect.value,10), y = parseInt(yearSelect.value,10);
+      const key = `sympt_${y}-${String(m+1).padStart(2,'0')}`;
+      let monthData = {};
+      try { monthData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e){ monthData = {}; }
+      const days = Object.keys(monthData).sort((a,b)=>Number(a)-Number(b));
+      const list = document.getElementById('list'); list.innerHTML = '';
+      if(!days.length){ list.innerHTML = '<p>No data for this month</p>'; return; }
+
+      const table = document.createElement('table');
+      const header = document.createElement('tr');
+      header.innerHTML = '<th>Day</th><th>Symptoms</th><th>Diagnosis</th><th>Health score</th>';
+      table.appendChild(header);
+      for(const d of days){
+        const row = document.createElement('tr');
+        const entry = monthData[d] || {};
+        row.innerHTML = `<td>${d}</td><td>${(entry.symptoms||'—')}</td><td>${(entry.diagnosisSummary||'—')}</td><td>${(entry.healthScore!==undefined && entry.healthScore!==null?entry.healthScore:'—')}</td>`;
+        table.appendChild(row);
+      }
+      list.appendChild(table);
+    }
+
+    function downloadPDF(){
+      const m = parseInt(monthSelect.value,10), y = parseInt(yearSelect.value,10);
+      const key = `sympt_${y}-${String(m+1).padStart(2,'0')}`;
+      let monthData = {};
+      try { monthData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e){ monthData = {}; }
+      const days = Object.keys(monthData).sort((a,b)=>Number(a)-Number(b));
+      const doc = window.open('', '_blank');
+      doc.document.write('<html><head><title>SymptTrack Export</title>');
+      doc.document.write('<style>body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse} td,th{padding:8px;border:1px solid #ddd}</style>');
+      doc.document.write('</head><body>');
+      doc.document.write(`<h1>Records for ${months[m]} ${y}</h1>`);
+      if(!days.length){ doc.document.write('<p>No data</p>'); }
+      else {
+        doc.document.write('<table><tr><th>Day</th><th>Symptoms</th><th>Diagnosis</th><th>Health score</th></tr>');
+        for(const d of days){
+          const e = monthData[d];
+          doc.document.write(`<tr><td>${d}</td><td>${(e.symptoms||'')}</td><td>${(e.diagnosisSummary||'')}</td><td>${(e.healthScore!==undefined && e.healthScore!==null?e.healthScore:'')}</td></tr>`);
+        }
+        doc.document.write('</table>');
+      }
+      doc.document.write('</body></html>');
+      doc.document.close();
+      doc.print();
+    }
+  </script>
+</body>
+</html>

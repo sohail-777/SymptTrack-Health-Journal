@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SymptTrack — Login</title>
+  <style>
+    :root { 
+      --accent: #2b7cff; 
+      --bg: linear-gradient(135deg,#6a11cb,#2575fc); 
+    }
+    body { 
+      margin:0; 
+      font-family: Inter, Arial, sans-serif; 
+      background: var(--bg); 
+      min-height:100vh; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+    }
+    .card { 
+      width:420px; 
+      background:white; 
+      border-radius:16px; 
+      padding:32px; 
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25); 
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    }
+    h1 { 
+      margin:0 0 6px 0; 
+      font-size:24px; 
+      color:#102a43;
+    }
+    p.sub { 
+      margin:0 0 20px 0; 
+      color:#556; 
+    }
+    label { 
+      display:block; 
+      margin:10px 0 6px; 
+      color:#334; 
+      font-weight:600; 
+      font-size:14px;
+    }
+    input[type=text], input[type=password] { 
+      width:100%; 
+      padding:12px 14px; 
+      border-radius:10px; 
+      border:1px solid #ccd6e4; 
+      font-size:15px; 
+      box-sizing:border-box; 
+      transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    input[type=text]:focus, input[type=password]:focus {
+      border:1px solid var(--accent);
+      box-shadow: 0 0 6px rgba(43,124,255,0.4);
+      outline:none;
+    }
+    .actions { 
+      display:flex; 
+      gap:10px; 
+      margin-top:20px; 
+      align-items:center; 
+    }
+    button { 
+      flex:1;
+      padding:12px 14px; 
+      border-radius:10px; 
+      border:none; 
+      cursor:pointer; 
+      background: linear-gradient(135deg,#2b7cff,#6a11cb); 
+      color:white; 
+      font-weight:700; 
+      font-size:15px;
+      box-shadow: 0 6px 14px rgba(43,124,255,0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(43,124,255,0.35);
+    }
+    .muted { 
+      background:transparent; 
+      color:var(--accent); 
+      border:1px solid rgba(43,124,255,0.4); 
+      font-weight:700; 
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .muted:hover {
+      background: rgba(43,124,255,0.1);
+      color:#102a43;
+    }
+    .hint { 
+      margin-top:14px; 
+      color:#444; 
+      font-size:13px; 
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome to SymptTrack</h1>
+    <p class="sub">Login to continue to your symptom journal and analysis.</p>
+
+    <label for="username">Username</label>
+    <input id="username" type="text" placeholder="Your username">
+
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Your password">
+
+    <div class="actions">
+      <button id="loginBtn">Login</button>
+      <button id="guestBtn" class="muted">Continue as Guest</button>
+    </div>
+
+    <p class="hint">This demo stores data in your browser's localStorage. No account is persisted on the server side.</p>
+  </div>
+
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', ()=> {
+      const u = document.getElementById('username').value.trim();
+      if(!u) { alert('Enter a username'); return; }
+      localStorage.setItem('sympt_user', u);
+      location.href = '/home';
+    });
+    document.getElementById('guestBtn').addEventListener('click', ()=> {
+      localStorage.setItem('sympt_user', 'guest');
+      location.href = '/home';
+    });
+  </script>
+</body>
+</html>

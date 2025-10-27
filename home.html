@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SymptTrack — Home</title>
+  <style>
+    :root {
+      --accent:#2b7cff;
+      --bg: linear-gradient(120deg,#6a11cb,#2575fc);
+    }
+    body {
+      margin:0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      min-height:100vh;
+    }
+    header {
+      background: var(--accent);
+      padding:12px 18px;
+      border-radius:12px;
+      margin:14px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+    header a {
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+    header a:hover {
+      color:#ffea00;
+      transform: translateY(-2px);
+    }
+    main {
+      max-width:1000px;
+      margin:24px auto;
+      padding:18px;
+    }
+    .card {
+      background:#fff;
+      padding:24px;
+      border-radius:14px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
+    }
+    .row {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .fact {
+      font-size:18px;
+      color:#123;
+      margin:12px 0;
+    }
+    .nav {
+      display:flex;
+      gap:10px;
+      margin-left:auto;
+    }
+    .nav a {
+      background:rgba(255,255,255,0.2);
+      padding:8px 14px;
+      border-radius:8px;
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .nav a:hover {
+      background:rgba(255,255,255,0.35);
+      transform: translateY(-2px);
+    }
+    button {
+      margin-top:12px;
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      background: linear-gradient(135deg,#2b7cff,#6a11cb);
+      color:#fff;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(43,124,255,0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow:0 10px 24px rgba(43,124,255,0.35);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/home">Home</a>
+    <a href="/symptoms">Symptoms</a>
+    <a href="/records">Records</a>
+    <a href="/about">About</a>
+    <div class="nav">
+      <a id="userDisplay">—</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Daily Health Fact</h2>
+      <p class="fact" id="fact">Loading...</p>
+      <button id="refreshFact">New Fact</button>
+      <p style="color:#556;margin-top:10px">
+        Tip: Click <strong>Symptoms</strong> to open your calendar journal for daily entries and diagnosis.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    // show user
+    document.getElementById('userDisplay').textContent = localStorage.getItem('sympt_user') || 'Guest';
+
+    // small pool of health facts
+    const facts = [
+      "Staying hydrated helps your body function optimally.",
+      "Regular, moderate exercise improves mood and sleep.",
+      "Adequate sleep strengthens your immune system.",
+      "Deep breathing for 2 minutes helps reduce stress.",
+      "Eating a variety of fruits and vegetables gives minerals and vitamins needed for recovery."
+    ];
+
+    function showRandomFact(){
+      const f = facts[Math.floor(Math.random()*facts.length)];
+      document.getElementById('fact').textContent = f;
+    }
+    document.getElementById('refreshFact').addEventListener('click', showRandomFact);
+    showRandomFact();
+  </script>
+</body>
+</html>
